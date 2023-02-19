@@ -10,13 +10,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
-
 @Document(collection = "notes")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@CompoundIndex(def = "{'name': 1, 'author': 1}", unique = true)
+//@CompoundIndex(def = "{'name': 1, 'author': 1}", unique = true)
 public class Notes {
     @Id
     @JsonSerialize(using = ObjectIdSerializer.class)

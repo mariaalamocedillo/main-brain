@@ -55,11 +55,10 @@ public class NotesController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<HttpStatus> deleteNote(@PathVariable("id") String id) {
-        System.out.println("-----------Borrando nota");
+    @PostMapping("/delete")
+    public ResponseEntity<HttpStatus> deleteNote(@RequestBody Map<String, Object> payload) {
         try {
-            notesService.deleteById(id);
+            notesService.deleteById(payload.get("id").toString());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
