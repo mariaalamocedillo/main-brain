@@ -1,54 +1,82 @@
 package com.mainbrain.models;
 
-import lombok.AllArgsConstructor;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 import org.bson.types.ObjectId;
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
-import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import java.util.List;
-
-@Document(collection = "users")
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class User {
+@Document(collection = "users")
+public class User implements UserDetails {
     @Id
     private ObjectId id;
-
-    @NotBlank
-    @Size(max = 20)
     private String username;
-
-    @NotBlank
-    @Size(max = 50)
-    @Email
     private String email;
-
-    @NotBlank
-    @Size(max = 120)
     private String password;
-
-    @DBRef
-    private Set<Role> roles = new HashSet<>();
-
+    private Set<UserRole> userRoles;
     @DocumentReference
-    private List<Notes> tasksListsIds;
+    private List<Notes> notesIds;
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, Set<UserRole> userRoles) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.userRoles = userRoles;
     }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        User user = (User) o;
+        return Objects.equals(username, user.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
+    }
+
+    @Override
+    public Set<? extends GrantedAuthority> getAuthorities() {
+        return this.userRoles.stream()
+                .map((UserRole role) -> new SimpleGrantedAuthority(role.getAuthority()))
+                .collect(Collectors.toSet());
+    }
+
 }

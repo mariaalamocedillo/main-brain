@@ -1,7 +1,9 @@
 package com.mainbrain.controllers;
 
 import com.mainbrain.models.Notes;
+import com.mainbrain.models.User;
 import com.mainbrain.services.NotesService;
+import com.mainbrain.services.UsersService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,9 @@ public class NotesController {
 
     @Autowired
     private NotesService notesService;
+
+    @Autowired
+    private UsersService usersService;
 
     @GetMapping
     public ResponseEntity<List<Notes>> root(){
@@ -36,8 +41,14 @@ public class NotesController {
 
     @PostMapping("/create")
     public ResponseEntity<Notes> createNote(@RequestBody Map<String, String> payload){
+
+        //User user = usersService.createUser(payload.get("author"), "email@gmail.com", "tortillapatata");
+
+        User user = null;
+
+
         return new ResponseEntity<>(notesService.createNotes(payload.get("name").trim(),
-                payload.get("tasks"), payload.get("author")), HttpStatus.CREATED);
+                payload.get("tasks"), user), HttpStatus.CREATED);
     }
 
     @PostMapping("/update")
@@ -59,6 +70,7 @@ public class NotesController {
     public ResponseEntity<HttpStatus> deleteNote(@RequestBody Map<String, Object> payload) {
         try {
             notesService.deleteById(payload.get("id").toString());
+            usersService.deleteId(payload.get("username").toString(), payload.get("id").toString());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

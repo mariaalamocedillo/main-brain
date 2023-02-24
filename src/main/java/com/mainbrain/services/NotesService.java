@@ -42,14 +42,13 @@ public class NotesService {
         return notesRepository.findByName(name);
     }
 
-    public Notes createNotes(String name, String tasks, String username){
-        User user = usersService.findByUsername(username).get();
-        Notes notes = notesRepository.insert(new Notes(name, tasks, username));
+    public Notes createNotes(String name, String tasks, User user){
+        Notes notes = notesRepository.insert(new Notes(name, tasks, user.getUsername()));
 
         mongoTemplate.update(User.class)
                 .matching(Criteria.where("id").is(user.getId()))
-                .apply(new Update().push("tasksListsIds").value(notes))
-                .first(); //actualizar el usuario que creó la tasklist
+                .apply(new Update().push("notesIds").value(notes))
+                .first(); //actualizar el usuario que creó la nota
 
         return notes;
     }
