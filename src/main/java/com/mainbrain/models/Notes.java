@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-//@CompoundIndex(def = "{'name': 1, 'author': 1}", unique = true)
 public class Notes {
     @Id
     @JsonSerialize(using = ObjectIdSerializer.class)

@@ -27,9 +27,10 @@ public class UsersService {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public User findByUsername(String username){return usersRepository.findUserByUsername(username);}
-    public User findByEmail(String email){return usersRepository.findUserByEmail(email);}
+    public User findByUsername(String username){return usersRepository.findByUsername(username);}
+    public User findByEmail(String email){return usersRepository.findByEmail(email);}
 
+/*
     public User createUser(String username, String email, String psswd){
         if(checkIfUserExists(email, username) != null){
             return null;
@@ -40,6 +41,7 @@ public class UsersService {
         user.setPassword(bCryptPasswordEncoder.encode(psswd));
         user.setEmail(email);
 
+
         UserRole userRole = new UserRole();
         userRole.setRole(roleRepository.findRoleByName("ROLE_USER"));
         user.setUserRoles(new HashSet<>(Collections.singletonList(userRole)));
@@ -48,6 +50,7 @@ public class UsersService {
 
         return user;
     }
+*/
 
     public void deleteId(String username, String noteId) {
         User user = findByUsername(username);

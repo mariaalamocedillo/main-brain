@@ -29,27 +29,14 @@ public class NotesController {
         return new ResponseEntity<>(notesService.allNotes(), HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Optional<Notes>> getNoteById(@PathVariable ObjectId id){
-        return new ResponseEntity<>(notesService.findById(id), HttpStatus.OK);
-    }
-
-    @GetMapping("/name/{name}")
-    public ResponseEntity<Optional<Notes>> getNoteByName(@PathVariable String name){
-        return new ResponseEntity<>(notesService.findByName(name), HttpStatus.OK);
-    }
-
     @PostMapping("/create")
     public ResponseEntity<Notes> createNote(@RequestBody Map<String, String> payload){
-
-        //User user = usersService.createUser(payload.get("author"), "email@gmail.com", "tortillapatata");
-
-        User user = null;
-
-
+        User user = usersService.findByUsername("yo"); //TODO cambio a usuario del payload
         return new ResponseEntity<>(notesService.createNotes(payload.get("name").trim(),
                 payload.get("tasks"), user), HttpStatus.CREATED);
     }
+
+
 
     @PostMapping("/update")
     public ResponseEntity<Notes> updateTutorial(@RequestBody Map<String, Object> payload) {

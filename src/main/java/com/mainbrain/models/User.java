@@ -18,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Data
 @Builder
-@NoArgsConstructor
 @Document(collection = "users")
 public class User implements UserDetails {
     @Id
@@ -29,13 +28,6 @@ public class User implements UserDetails {
     private Set<UserRole> userRoles;
     @DocumentReference
     private List<Notes> notesIds;
-
-    public User(String username, String email, String password, Set<UserRole> userRoles) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.userRoles = userRoles;
-    }
 
     @Override
     public boolean isAccountNonExpired() {

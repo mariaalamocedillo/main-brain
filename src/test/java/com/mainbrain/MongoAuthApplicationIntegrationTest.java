@@ -55,30 +55,18 @@ class MongoAuthApplicationIntegrationTest {
     }
 
     private void setUp() {
-        Role roleUser = new Role();
-        roleUser.setName("ROLE_USER");
-        mongoTemplate.save(roleUser);
-
-        User user = new User();
-        user.setUsername(USER_NAME);
-        user.setPassword(bCryptPasswordEncoder.encode(PASSWORD));
-
-        UserRole userRole = new UserRole();
-        userRole.setRole(roleUser);
-        user.setUserRoles(new HashSet<>(Collections.singletonList(userRole)));
+        User user = User.builder()
+                .username(USER_NAME)
+                .password(bCryptPasswordEncoder.encode(PASSWORD))
+                .userRoles(Collections.singleton(new UserRole(new Role("ROLE_USER"))))
+                .build();
         mongoTemplate.save(user);
 
-        User admin = new User();
-        admin.setUsername(ADMIN_NAME);
-        admin.setPassword(bCryptPasswordEncoder.encode(PASSWORD));
-
-        Role roleAdmin = new Role();
-        roleAdmin.setName("ROLE_ADMIN");
-        mongoTemplate.save(roleAdmin);
-
-        UserRole adminRole = new UserRole();
-        adminRole.setRole(roleAdmin);
-        admin.setUserRoles(new HashSet<>(Collections.singletonList(adminRole)));
+        User admin = User.builder()
+                .username(ADMIN_NAME)
+                .password(bCryptPasswordEncoder.encode(PASSWORD))
+                .userRoles(Collections.singleton(new UserRole(new Role("ROLE_ADMIN"))))
+                .build();
         mongoTemplate.save(admin);
     }
 
