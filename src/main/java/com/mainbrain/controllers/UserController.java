@@ -82,9 +82,9 @@ public class UserController {
 
         SecurityContextHolder.getContext().setAuthentication(null);
         System.out.println("A LOGEAR: ");
-        System.out.println("PROCEDEMOS AL LOGIN -->" + securityServiceImpl.login("yo", "maria"));
+        //System.out.println("PROCEDEMOS AL LOGIN -->" + securityServiceImpl.login("yo", "maria"));
 
-        System.out.println(SecurityContextHolder.getContext().getAuthentication());
+        //System.out.println(SecurityContextHolder.setContext().getAuthentication());
 
 
 

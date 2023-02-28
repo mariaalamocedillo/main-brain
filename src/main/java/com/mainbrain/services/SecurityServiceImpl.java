@@ -55,7 +55,7 @@ public class SecurityServiceImpl implements SecurityService {
         System.out.println("--- UsernamePasswordAuthenticationToken: ::::::" + usernamePasswordAuthenticationToken);
 
         System.out.println("<<< authenticationManager.authenticate(): ::::::");
-        authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        //authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         System.out.println("<<< AUTENTICADO PASADO ::::::");
 
         if (usernamePasswordAuthenticationToken.isAuthenticated()) {
