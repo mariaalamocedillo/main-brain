@@ -15,8 +15,6 @@ import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
-import java.util.Objects;
-
 @Configuration
 public class SpringMongoConfig {
     @Bean

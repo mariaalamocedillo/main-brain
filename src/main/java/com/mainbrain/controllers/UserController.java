@@ -4,7 +4,10 @@ import com.mainbrain.models.Role;
 import com.mainbrain.models.User;
 import com.mainbrain.models.UserRole;
 import com.mainbrain.services.SecurityServiceImpl;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,27 +24,17 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> payload) {
-
-        System.out.println("PROCEDEMOS AL LOGIN -->" + securityServiceImpl.login(payload.get("username"), payload.get("password")));
+    public ResponseEntity<?> login(@RequestBody Map<String, String> payload) {
 
         boolean result = securityServiceImpl.login(payload.get("username"), payload.get("password"));
         if (result) {
-            // Si el login es exitoso, creamos una sesión y devolvemos el usuario
-            // Obtain the user details from the Spring Security context
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            //Creation of a cookie to be sent
+            Cookie cookie = new Cookie("user-Token", SecurityContextHolder.getContext().getAuthentication().toString());
+            cookie.setMaxAge(3600);
+            cookie.setPath("/");
 
-            // Create a new instance of your User class using the user details
-            User user = User.builder()
-                    .username(userDetails.getUsername())
-                    .password(userDetails.getPassword())
-                    .userRoles((Set<UserRole>) userDetails.getAuthorities())
-                    .build();
-
-            System.out.println("USER EN EL LOGIN DEL CONTROLER " +user);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(cookie);
         } else {
-            // Si el login falla, devolvemos un mensaje de error
             return ResponseEntity.badRequest().body("Nombre de usuario o contraseña incorrectos");
         }
     }
