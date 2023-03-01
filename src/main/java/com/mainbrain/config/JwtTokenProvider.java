@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,8 +23,9 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${JWT_SECRET}")
-    private String secretKey;
+    //@Value("${JWT_SECRET}")
+    private String secretKey = "YUxGOGo4NXBLRHN1T3E5Z1pndURmTkJvRDBFOVFKYkgxZUo3TndrTUx0UmIxTEZSVHFoR2hWbHRzTFlVYW1VWnBKTUZ5bUFPSCsramU4aWR6QUJNUkE9PQ==";
+
 
     @Value("${JWT_EXPIRATION_TIME}")
     private long validityInMilliseconds;
@@ -58,7 +60,7 @@ public class JwtTokenProvider {
                 .setSigningKey(secret)
                 .build()
                 .parseClaimsJws(token).getBody();
-
+        System.out.println(claims);
         return User.builder()
                 .username(claims.getSubject())
                 .password("") // La password no es necesaria ya que la autenticación ya se realizó

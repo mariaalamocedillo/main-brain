@@ -1,9 +1,7 @@
 package com.mainbrain.services;
 
 
-import com.mainbrain.models.Role;
 import com.mainbrain.models.User;
-import com.mainbrain.models.UserRole;
 import com.mainbrain.repositories.RoleRepository;
 import com.mainbrain.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +9,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Optional;
 
 @Service
 public class UsersService {
@@ -27,30 +24,10 @@ public class UsersService {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    public Optional<User> findById(String id){return usersRepository.findById(id);}
     public User findByUsername(String username){return usersRepository.findByUsername(username);}
     public User findByEmail(String email){return usersRepository.findByEmail(email);}
 
-/*
-    public User createUser(String username, String email, String psswd){
-        if(checkIfUserExists(email, username) != null){
-            return null;
-        }
-
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(bCryptPasswordEncoder.encode(psswd));
-        user.setEmail(email);
-
-
-        UserRole userRole = new UserRole();
-        userRole.setRole(roleRepository.findRoleByName("ROLE_USER"));
-        user.setUserRoles(new HashSet<>(Collections.singletonList(userRole)));
-        usersRepository.insert(user);
-        mongoTemplate.save(user);
-
-        return user;
-    }
-*/
 
     public void deleteId(String username, String noteId) {
         User user = findByUsername(username);

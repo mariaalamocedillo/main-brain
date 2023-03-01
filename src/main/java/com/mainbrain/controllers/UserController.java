@@ -8,6 +8,7 @@ import com.mainbrain.models.Role;
 import com.mainbrain.models.User;
 import com.mainbrain.models.UserRole;
 import com.mainbrain.services.SecurityServiceImpl;
+import com.mainbrain.services.UsersService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -23,7 +24,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
+import javax.crypto.SecretKey;
 import java.util.*;
 
 @RestController
@@ -32,6 +36,8 @@ public class UserController {
 
     @Autowired
     private SecurityServiceImpl securityServiceImpl;
+    @Autowired
+    private UsersService usersService;
 
     @Autowired
     private JwtTokenProvider tokenProvider;
@@ -47,13 +53,14 @@ public class UserController {
             //session.setAttribute("userToken", tokenProvider.generateToken(SecurityContextHolder.getContext().getAuthentication()));
 
             User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
             /*Map<String, Object> response = new HashMap<>();
             response.put("authentication", SecurityContextHolder.getContext().getAuthentication());
             response.put("user", user);*/
-
-            return ResponseEntity.ok(SecurityContextHolder.getContext().getAuthentication());
+            String token = tokenProvider.generateToken(auth);
+            System.out.println("TOKEN DE LOGIN : " + token);
+            return ResponseEntity.ok(token);
         } else {
             return ResponseEntity.badRequest().body("Nombre de usuario o contraseña incorrectos");
         }
@@ -88,13 +95,21 @@ public class UserController {
 
     @PostMapping("/me")
     public ResponseEntity<?> getProfile(HttpServletRequest request) {
-        System.out.println("RESOLVER"+tokenProvider.resolveToken(request));
+
+        System.out.println("RESOLVER "+tokenProvider.resolveToken(request));
+        System.out.println("USER: ::: : " + tokenProvider.getUserPrincipalFromToken(tokenProvider.resolveToken(request)));
         String userToken = request.getHeader("Authorization");
         if (userToken != null && !userToken.isEmpty()) {
             // Aquí puedes validar el token y obtener la información del usuario si es válido
-            //User userDetails = tokenProvider.getUserPrincipalFromToken(userToken.replaceAll("Bearer ", ""));
-            String datos = userToken.replaceAll("Bearer ", "");
+            User userDetails = tokenProvider.getUserPrincipalFromToken(tokenProvider.resolveToken(request));
 
+            System.out.println(userDetails.getUsername());
+            Optional<User> _user = usersService.findById(userDetails.getUsername());
+
+            if (_user.isPresent()){
+                System.out.println(_user.get().getUsername());
+                return ResponseEntity.ok(_user.get());
+            }
 
             return ResponseEntity.ok("userDetails estan bn" );
         } else {
