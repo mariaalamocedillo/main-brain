@@ -1,10 +1,13 @@
 package com.mainbrain.models;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.mainbrain.config.ObjectIdSerializer;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Document(collection = "users")
 public class User implements UserDetails {
     @Id
+    @JsonSerialize(using = ObjectIdSerializer.class)
     private ObjectId id;
     private String username;
     private String email;
@@ -70,5 +74,4 @@ public class User implements UserDetails {
                 .map((UserRole role) -> new SimpleGrantedAuthority(role.getAuthority()))
                 .collect(Collectors.toSet());
     }
-
 }

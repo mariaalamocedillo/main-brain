@@ -1,17 +1,28 @@
 package com.mainbrain.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mainbrain.config.JwtTokenProvider;
+import com.mainbrain.models.AuthorizationDeserializer;
 import com.mainbrain.models.Role;
 import com.mainbrain.models.User;
 import com.mainbrain.models.UserRole;
 import com.mainbrain.services.SecurityServiceImpl;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
@@ -22,23 +33,31 @@ public class UserController {
     @Autowired
     private SecurityServiceImpl securityServiceImpl;
 
+    @Autowired
+    private JwtTokenProvider tokenProvider;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpServletRequest request) {
 
         boolean result = securityServiceImpl.login(payload.get("username"), payload.get("password"));
         if (result) {
-            //Creation of a cookie to be sent
-            Cookie cookie = new Cookie("user-Token", SecurityContextHolder.getContext().getAuthentication().toString());
-            cookie.setMaxAge(3600);
-            cookie.setPath("/");
+            //Creation of a session
+            HttpSession session = request.getSession();
+            session.setAttribute("userToken", SecurityContextHolder.getContext().getAuthentication().toString());
+            //session.setAttribute("userToken", tokenProvider.generateToken(SecurityContextHolder.getContext().getAuthentication()));
 
-            return ResponseEntity.ok(cookie);
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+
+            /*Map<String, Object> response = new HashMap<>();
+            response.put("authentication", SecurityContextHolder.getContext().getAuthentication());
+            response.put("user", user);*/
+
+            return ResponseEntity.ok(SecurityContextHolder.getContext().getAuthentication());
         } else {
             return ResponseEntity.badRequest().body("Nombre de usuario o contraseña incorrectos");
         }
     }
-
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> payload) {
@@ -68,24 +87,19 @@ public class UserController {
     }
 
     @PostMapping("/me")
-    public ResponseEntity<?> obtenerUsuarioActual() {
-        // Obtenemos el usuario actual de la sesión
-        //User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //return ResponseEntity.ok(user);
-
-        SecurityContextHolder.getContext().setAuthentication(null);
-        System.out.println("A LOGEAR: ");
-        //System.out.println("PROCEDEMOS AL LOGIN -->" + securityServiceImpl.login("yo", "maria"));
-
-        //System.out.println(SecurityContextHolder.setContext().getAuthentication());
+    public ResponseEntity<?> getProfile(HttpServletRequest request) {
+        System.out.println("RESOLVER"+tokenProvider.resolveToken(request));
+        String userToken = request.getHeader("Authorization");
+        if (userToken != null && !userToken.isEmpty()) {
+            // Aquí puedes validar el token y obtener la información del usuario si es válido
+            //User userDetails = tokenProvider.getUserPrincipalFromToken(userToken.replaceAll("Bearer ", ""));
+            String datos = userToken.replaceAll("Bearer ", "");
 
 
-
-        System.out.println(SecurityContextHolder.getContext().getAuthentication());
-
-
-
-        return ResponseEntity.ok().body("El usuario esta en alguna parte");
+            return ResponseEntity.ok("userDetails estan bn" );
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
 
