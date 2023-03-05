@@ -11,8 +11,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,29 +22,20 @@ public class NotesService {
     @Autowired
     private NotesRepository notesRepository;
 
-    @Autowired
-    private UsersService usersService;
-
     public NotesService() {
-    }
-
-    public List<Notes> allNotes(){
-        return notesRepository.findAll();
     }
 
     public Optional<Notes> findById(ObjectId id){
         return notesRepository.findById(id);
     }
 
-    public Optional<Notes> findByName(String name){
-        return notesRepository.findByName(name);
-    }
-
-    public Notes createNotes(String name, String tasks, User user){
-        Notes notes = notesRepository.insert(new Notes(name, tasks, user.getUsername()));
-
+    public Notes createNotes(String title, String content, User author, User holder, String colour){
+        Notes notes = notesRepository.insert(new Notes(title, content, author.getUsername(), holder.getUsername()));
+        if(colour != null) {
+            notes.setColour(colour);
+        }
         mongoTemplate.update(User.class)
-                .matching(Criteria.where("id").is(user.getId()))
+                .matching(Criteria.where("id").is(holder.getId()))
                 .apply(new Update().push("notesIds").value(notes))
                 .first(); //actualizar el usuario que creó la nota
 

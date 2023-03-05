@@ -2,6 +2,7 @@ package com.mainbrain.config;
 
 import com.mainbrain.models.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -23,8 +24,8 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    //@Value("${JWT_SECRET}")
-    private String secretKey = "YUxGOGo4NXBLRHN1T3E5Z1pndURmTkJvRDBFOVFKYkgxZUo3TndrTUx0UmIxTEZSVHFoR2hWbHRzTFlVYW1VWnBKTUZ5bUFPSCsramU4aWR6QUJNUkE9PQ==";
+    @Value("${JWT_SECRET}")
+    private String secretKey;
 
 
     @Value("${JWT_EXPIRATION_TIME}")
@@ -60,7 +61,7 @@ public class JwtTokenProvider {
                 .setSigningKey(secret)
                 .build()
                 .parseClaimsJws(token).getBody();
-        System.out.println(claims);
+
         return User.builder()
                 .username(claims.getSubject())
                 .password("") // La password no es necesaria ya que la autenticación ya se realizó
@@ -86,4 +87,26 @@ public class JwtTokenProvider {
         }
         return null;
     }
+
+    public boolean isTokenValid(String token) {
+        System.out.println("TOKEN" + token.substring(7));
+        if(token.contains("null") || token.substring(7).isEmpty()){
+            return false;
+        }
+        try {
+            SecretKey secret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secret)
+                    .build()
+                    .parseClaimsJws(token.substring(7))
+                    .getBody();
+            Date expirationDate = claims.getExpiration();
+            return expirationDate.after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            // Si hay alguna excepción al verificar el token, se considera no válido
+            System.out.println("Token no valido: " + e.getMessage());
+            return false;
+        }
+    }
+
 }

@@ -19,11 +19,14 @@ public class Notes {
     private ObjectId id;
     private String name;
     private String tasks;
-    private String author;
+    private String author;  //who created the note
+    private String holder;  //the one with the note in its board
+    private String colour;
 
-    public Notes(String name, String tasks, String author) {
+    public Notes(String name, String tasks, String author, String holder) {
         this.name = name;
         this.tasks = tasks;
         this.author = author;
+        this.holder = holder;
     }
 }
