@@ -30,20 +30,22 @@ public class NotesService {
     }
 
     public Notes createNotes(String title, String content, User author, User holder, String colour){
-        Notes notes = notesRepository.insert(new Notes(title, content, author.getUsername(), holder.getUsername()));
+        Notes note = notesRepository.insert(new Notes(title, content, author.getUsername(), holder.getUsername()));
+        System.out.println(colour);
         if(colour != null) {
-            notes.setColour(colour);
+            note.setColour(colour);
+            notesRepository.save(note);
         }
         mongoTemplate.update(User.class)
                 .matching(Criteria.where("id").is(holder.getId()))
-                .apply(new Update().push("notesIds").value(notes))
+                .apply(new Update().push("notesIds").value(note))
                 .first(); //actualizar el usuario que creó la nota
 
-        return notes;
+        return note;
     }
 
-    public Notes save(Notes notes){
-        return notesRepository.save(notes);
+    public Notes save(Notes note){
+        return notesRepository.save(note);
     }
 
     public void deleteById(String id){

@@ -34,7 +34,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpServletRequest request) {
         //check any previous session
-        if (checkAuthenticated(request) != null) {
+        if (usersService.checkAuthenticated(request) != null) {
             System.out.println("An user was already logged in; proceed to logout");
             securityServiceImpl.logout();
         }
@@ -83,7 +83,7 @@ public class UserController {
     @PostMapping("/myNotes")
     public ResponseEntity<?> getProfile(HttpServletRequest request) {
         // check if the token is valid
-        User user = checkAuthenticated(request);
+        User user = usersService.checkAuthenticated(request);
         if (user != null) {
             System.out.println("Valid session and user");
             return ResponseEntity.ok(user.getNotesIds());
@@ -96,7 +96,7 @@ public class UserController {
     @PostMapping("/check")
     public ResponseEntity<?> checkUser(HttpServletRequest request) {
         // check if the token is valid
-        if(checkAuthenticated(request) == null) {
+        if(usersService.checkAuthenticated(request) == null) {
             return ResponseEntity.ok("no-autorizado");
         }
         return ResponseEntity.ok("autorizado");
@@ -104,30 +104,11 @@ public class UserController {
 
     @PostMapping("/getAllUsers")
     public ResponseEntity<?> gatAllUsers(HttpServletRequest request) {
-        User author = checkAuthenticated(request);
+        User author = usersService.checkAuthenticated(request);
         if(author == null) {
             return ResponseEntity.ok("no-autorizado");
         }
         return ResponseEntity.ok(usersService.findAllUsers(author));
     }
 
-    public User checkAuthenticated(HttpServletRequest request) {
-        // check if the token is valid
-        String userToken = request.getHeader("Authorization");
-        if (userToken == null || userToken.isEmpty()) {
-            System.out.println("There is no active session ");
-            return null;
-        } else if (tokenProvider.isTokenValid(userToken)) {
-            // Aquí valida el token y obtiene la información del usuario si existe
-            User userDetails = tokenProvider.getUserPrincipalFromToken(tokenProvider.resolveToken(request));
-            Optional<User> _user = usersService.findById(userDetails.getUsername());
-            if (_user.isPresent()){
-                System.out.println("There is a session: User was found");
-                return _user.get();
-            }
-            System.out.println("There is a session: User not found");
-        }
-        System.out.println("The session is invalid");
-        return null;
-    }
 }
