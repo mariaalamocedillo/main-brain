@@ -7,6 +7,8 @@ import com.mainbrain.models.UserRole;
 import com.mainbrain.services.SecurityServiceImpl;
 import com.mainbrain.services.UsersService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,8 @@ import java.util.*;
 @RequestMapping("/auth")
 public class UserController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotesController.class);
+
     @Autowired
     private SecurityServiceImpl securityServiceImpl;
     @Autowired
@@ -35,18 +39,18 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpServletRequest request) {
         //check any previous session
         if (usersService.checkAuthenticated(request) != null) {
-            System.out.println("An user was already logged in; proceed to logout");
+            LOGGER.info("An user was already logged in; proceed to logout");
             securityServiceImpl.logout();
         }
 
         if (securityServiceImpl.login(payload.get("username"), payload.get("password"))) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String token = tokenProvider.generateToken(auth);
-            System.out.println(token);
+            LOGGER.info("User logged in; token for session created");
             return ResponseEntity.ok(token);
-        } else {
-            return ResponseEntity.badRequest().body("Nombre de usuario o contraseña incorrectos");
         }
+        LOGGER.info("Couldn't log in; Username or password is incorrect");
+        return ResponseEntity.badRequest().body("Username or password is incorrect");
     }
 
     @PostMapping("/register")
@@ -69,13 +73,13 @@ public class UserController {
         boolean registrado = securityServiceImpl.register(_user);
         if (registrado) {
             // Si el registro es exitoso, iniciamos sesión y devolvemos el token de login
-            System.out.println("SE HA REGISTRADO EL USUARIO");
-
             securityServiceImpl.login(_user.getUsername(), _user.getPassword());
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            LOGGER.info("User has been registered and a token has been created");
             return ResponseEntity.ok(tokenProvider.generateToken(auth));
         } else {
             // Si el registro falla, devolvemos un mensaje de error
+            LOGGER.info("User already exists");
             return ResponseEntity.badRequest().body("User already exists");
         }
     }
@@ -85,10 +89,10 @@ public class UserController {
         // check if the token is valid
         User user = usersService.checkAuthenticated(request);
         if (user != null) {
-            System.out.println("Valid session and user");
+            LOGGER.info("Valid session and user");
             return ResponseEntity.ok(user.getNotesIds());
         } else {
-            System.out.println("The session is invalid");
+            LOGGER.info("The session is invalid");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }

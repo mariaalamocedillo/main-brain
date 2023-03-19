@@ -1,26 +1,26 @@
 package com.mainbrain.controllers;
 
-import com.mainbrain.config.JwtTokenProvider;
-import com.mainbrain.config.SecurityConfig;
 import com.mainbrain.models.Notes;
 import com.mainbrain.models.User;
 import com.mainbrain.services.NotesService;
 import com.mainbrain.services.UsersService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @RestController
 @RequestMapping("/notes")
 public class NotesController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotesController.class);
 
     @Autowired
     private NotesService notesService;
@@ -34,7 +34,7 @@ public class NotesController {
         // check if the user is valid
         User userAuthor = usersService.checkAuthenticated(request);
         if (userAuthor == null) {
-            System.out.println("The session is invalid");
+            LOGGER.info("The user session is invalid");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User userHolder;
@@ -44,8 +44,10 @@ public class NotesController {
         } else {
             userHolder = userAuthor;
         }
+        LOGGER.info("The note from {} for {} has been created", userHolder.getUsername(), userAuthor.getUsername());
         return new ResponseEntity<>(notesService.createNotes(payload.get("title").trim(),
-                payload.get("content").trim(), userAuthor, userHolder, payload.get("colour")), HttpStatus.CREATED);
+                payload.get("content").trim(), userAuthor, userHolder, payload.get("colour"),
+                LocalDateTime.now()), HttpStatus.CREATED);
     }
 
 
@@ -55,7 +57,7 @@ public class NotesController {
         // check if the user is valid
         User user = usersService.checkAuthenticated(request);
         if (user == null) {
-            System.out.println("The session is invalid");
+            LOGGER.info("The user session is invalid");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         // get the note optional
@@ -67,6 +69,7 @@ public class NotesController {
             Notes note = notesOpt.get();
             note.setName(payload.get("title").toString().trim());
             note.setTasks(payload.get("content").toString().trim());
+            LOGGER.info("The note {} from {} has been updated", note.getId(), note.getAuthor());
             return new ResponseEntity<>(notesService.save(note), HttpStatus.OK);
         }
 
@@ -78,13 +81,14 @@ public class NotesController {
         // check if the token is valid
         User user = usersService.checkAuthenticated(request);
         if (user == null) {
-            System.out.println("The session is invalid");
+            LOGGER.info("The user session is invalid");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         // proceed to delete the note or send an error response
         try {
             notesService.deleteById(payload.get("id").toString());
             usersService.deleteId(user.getUsername(), payload.get("id").toString());
+            LOGGER.info("The note {} has been deleted", payload.get("id").toString());
             return new ResponseEntity<>(HttpStatus.OK); //note deleted from db and user notesIds
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

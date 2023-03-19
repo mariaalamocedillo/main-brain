@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -29,9 +30,8 @@ public class NotesService {
         return notesRepository.findById(id);
     }
 
-    public Notes createNotes(String title, String content, User author, User holder, String colour){
-        Notes note = notesRepository.insert(new Notes(title, content, author.getUsername(), holder.getUsername()));
-        System.out.println(colour);
+    public Notes createNotes(String title, String content, User author, User holder, String colour, LocalDateTime creation){
+        Notes note = notesRepository.insert(new Notes(title, content, author.getUsername(), holder.getUsername(), creation));
         if(colour != null) {
             note.setColour(colour);
             notesRepository.save(note);

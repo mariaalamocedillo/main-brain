@@ -2,9 +2,12 @@ package com.mainbrain.services;
 
 
 import com.mainbrain.config.JwtTokenProvider;
+import com.mainbrain.controllers.NotesController;
 import com.mainbrain.models.User;
 import com.mainbrain.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,8 @@ import java.util.*;
 
 @Service
 public class UsersService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotesController.class);
 
     @Autowired
     private UserRepository usersRepository;
@@ -48,19 +53,20 @@ public class UsersService {
         // check if the token is valid
         String userToken = request.getHeader("Authorization");
         if (userToken == null || userToken.isEmpty()) {
-            System.out.println("There is no active session ");
+            LOGGER.info("There is no active session ");
             return null;
         } else if (tokenProvider.isTokenValid(userToken)) {
             // Aquí valida el token y obtiene la información del usuario si existe
             User userDetails = tokenProvider.getUserPrincipalFromToken(tokenProvider.resolveToken(request));
             Optional<User> _user = findById(userDetails.getUsername());
             if (_user.isPresent()){
-                System.out.println("There is a session: User was found");
+                LOGGER.info("There is a session: User was found");
                 return _user.get();
             }
-            System.out.println("There is a session: User not found");
+            LOGGER.info("There is a session but the user was not found");
+        } else {
+            LOGGER.info("The session is invalid");
         }
-        System.out.println("The session is invalid");
         return null;
     }
 

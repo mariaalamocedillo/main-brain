@@ -1,9 +1,12 @@
 package com.mainbrain.services;
 
+import com.mainbrain.controllers.NotesController;
 import com.mainbrain.models.Role;
 import com.mainbrain.models.User;
 import com.mainbrain.models.UserRole;
 import com.mainbrain.repositories.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,9 +24,11 @@ import java.util.List;
 @Service
 public class SecurityServiceImpl implements SecurityService {
 
-    private final AuthenticationManager authenticationManager;
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotesController.class);
 
-    private final UserDetailsService userDetailsService;
+    private final AuthenticationManager AUTHENTICATIONMANAGER;
+
+    private final UserDetailsService USERDETAILSSERVICE;
 
     private final UserRepository userRepository; // inyecta el repositorio de usuarios
 
@@ -32,8 +37,8 @@ public class SecurityServiceImpl implements SecurityService {
 
     public SecurityServiceImpl(AuthenticationManager authenticationManager,
                                UserDetailsService userDetailsService, UserRepository userRepository) {
-        this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
+        this.AUTHENTICATIONMANAGER = authenticationManager;
+        this.USERDETAILSSERVICE = userDetailsService;
         this.userRepository = userRepository;
     }
 
@@ -49,11 +54,10 @@ public class SecurityServiceImpl implements SecurityService {
         if (usernamePasswordAuthenticationToken.isAuthenticated()) {
             SecurityContextHolder.getContext()
                     .setAuthentication(usernamePasswordAuthenticationToken);
-            System.out.println("User has been authenticated");
-
+            LOGGER.info("User has been authenticated");
             return true;
         }
-        System.out.println("User hasn't been authenticated");
+        LOGGER.info("User hasn't been authenticated");
         return false;
     }
 
